@@ -1,6 +1,7 @@
 const User=require("../models/userModel");
 const jwt=require("jsonwebtoken");
 const asyncErrorHandler = require("../utils/asyncErrorHandler");
+const CustomError=require("../utils/CustomError");
 
 const signToken=(id)=>{
     return jwt.sign({id:id},process.env.JWT_SECRET,{expiresIn:'7d'});
@@ -17,3 +18,17 @@ exports.signup=asyncErrorHandler(async (req,res)=>{
             }
         });
     });
+
+//user login
+exports.login=asyncErrorHandler(async (req,res,next)=>{
+    const {email,password}=req.body;
+    const user=await User.findOne({email}).select("+password");
+    if(!user||!(await user.comparePassword(password,user.password))){
+        return next(new CustomError("Incorrect email or password",400));
+    }
+    const token=signToken(user._id);
+    res.status(200).json({
+        status:"success",
+        token
+    });
+});

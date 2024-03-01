@@ -9,7 +9,7 @@ const userSchema=new mongoose.Schema({
     email:{
         type:String,
         required:[true,"Email already exist"],
-        unique:[true,"Email already exist"]
+        unique:true
     },
     password:{
         type:String,
@@ -26,6 +26,10 @@ userSchema.pre("save",async function(next){
         return next()
     }
     this.password=await bcrypt.hash(this.password,10);
-})
+});
+
+userSchema.methods.comparePassword=async function(userEnteredPassword,dbPassword){
+   return bcrypt.compare(userEnteredPassword,dbPassword);
+}
 
 module.exports=mongoose.model("User",userSchema);
