@@ -18,7 +18,15 @@ const userSchema=new mongoose.Schema({
         select:false
     },
     profilePic:String,
-    bio:String
+    bio:String,
+    followers:[{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"User"
+    }],
+    followings:[{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"User"
+    }],
 },{timestamps:true});
 
 userSchema.pre("save",async function(next){
