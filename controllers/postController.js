@@ -29,3 +29,15 @@ exports.getPost=asyncErrorHandler(async (req,res,next)=>{
         }
     });
 });
+
+//get posts of user followings
+exports.getPostOfFollowings=asyncErrorHandler(async (req,res,next)=>{
+    const user=await User.findById(req.user._id);
+    const posts=await Post.find({postedBy:{$in:user.followings}}).sort({createdAt:-1});
+    res.status(200).json({
+        status:"success",
+        data:{
+            feed:posts
+        }
+    });
+});
