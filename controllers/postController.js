@@ -1,6 +1,7 @@
 const Post=require("../models/postModel");
 const User=require("../models/userModel");
 const asyncErrorHandler = require("../utils/asyncErrorHandler");
+const CustomError=require("../utils/CustomError");
 
 //create a new post
 exports.createPost=asyncErrorHandler(async (req,res,next)=>{
@@ -15,3 +16,16 @@ exports.createPost=asyncErrorHandler(async (req,res,next)=>{
     });
 });
 
+//get single post
+exports.getPost=asyncErrorHandler(async (req,res,next)=>{
+    const post =await Post.findById(req.params.id);
+    if(!post){
+        return next(new CustomError("post not found",404));
+    }
+    res.status(200).json({
+        status:"success",
+        data:{
+            post
+        }
+    });
+});
