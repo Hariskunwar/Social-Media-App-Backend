@@ -67,3 +67,18 @@ exports.postLikeUnlike=asyncErrorHandler(async (req,res,next)=>{
     });
     }
 });
+
+//get users all post
+exports.getUserPosts=asyncErrorHandler(async (req,res,next)=>{
+    const user=await User.findById(req.params.userId);
+    if(!user){
+        return next(new CustomError("user not found",404));
+    }
+    const posts=await Post.find({postedBy:user._id}).sort({createdAt:-1});
+    res.status(200).json({
+        status:"success",
+        data:{
+            posts
+        }
+    });
+});
