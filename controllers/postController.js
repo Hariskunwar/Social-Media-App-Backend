@@ -41,3 +41,29 @@ exports.getPostOfFollowings=asyncErrorHandler(async (req,res,next)=>{
         }
     });
 });
+
+//post like and unlike functionality
+exports.postLikeUnlike=asyncErrorHandler(async (req,res,next)=>{
+    const {postId}=req.params;
+    const userId=req.user._id;
+    //find post
+    const post=await Post.findById(postId);
+    if(!post){
+        return next(new CustomError("post not found",404));
+    }
+    //if already liked then remove like
+    if(post.likes.includes(userId)){
+        await Post.findByIdAndUpdate(postId,{$pull:{likes:userId}});
+        res.status(200).json({
+        status:"success",
+        message:"post unliked successfully"
+    });
+    }
+    else{
+        await Post.findByIdAndUpdate(postId,{$push:{likes:userId}});
+        res.status(200).json({
+        status:"success",
+        message:"post liked successfully"
+    });
+    }
+});
