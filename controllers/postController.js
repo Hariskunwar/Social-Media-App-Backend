@@ -101,3 +101,30 @@ exports.addComment=asyncErrorHandler(async (req,res,next)=>{
             message:"comment added successfully"
         });
 });
+
+//delete a comment
+exports.deleteComment=asyncErrorHandler(async (req,res,next)=>{
+    const {postId,commentId}=req.params;
+    const post=await Post.findById(postId);
+    if(!post){
+        return next(new CustomError("Post not found",404));
+    }
+    const commentIndex=post.comments.findIndex((comment)=>{
+        return comment._id.toString()===commentId.toString();
+    })
+    //check comment exists or not
+    if(commentIndex===-1){
+        return next(new CustomError("comment not found",404));
+    }
+    //only post owner and comment owner can delete a comment
+    if(post.postedBy.toString()===req.user._id.toString()||
+       post.comments[commentIndex].commentBy.toString()===req.user._id.toString()){
+        await Post.findByIdAndUpdate(postId,{$pull:{comments:{_id:commentId}}});
+        res.status(200).json({
+            status:"success",
+            message:"comment deleted successfully"
+        });
+    }else{
+        next(new CustomError("You are not authorized to delete this comment",401))
+    }
+});
