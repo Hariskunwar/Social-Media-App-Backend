@@ -82,3 +82,22 @@ exports.getUserPosts=asyncErrorHandler(async (req,res,next)=>{
         }
     });
 });
+
+//comment on post
+exports.addComment=asyncErrorHandler(async (req,res,next)=>{
+    const {comment}=req.body;
+    const {postId}=req.params;
+    const post=await Post.findById(postId);
+    if(!post){
+        return next(new CustomError("Post not found",404));
+    }
+    await Post.findByIdAndUpdate(post._id,{$push:{comments:
+        { 
+            commentBy:req.user._id,
+            comment:comment
+        }}});
+        res.status(200).json({
+            status:"success",
+            message:"comment added successfully"
+        });
+});
