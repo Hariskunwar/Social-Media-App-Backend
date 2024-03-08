@@ -1,6 +1,7 @@
 const User=require("../models/userModel");
 const asyncErrorHandler = require("../utils/asyncErrorHandler");
 const CustomError=require("../utils/CustomError");
+const Post=require("../models/postModel");
 
 //get user profile
 exports.getUserProfile=asyncErrorHandler(async (req,res,next)=>{
@@ -88,4 +89,27 @@ exports.followUnfollowUser=asyncErrorHandler(async (req,res,next)=>{
             message:"User followed successfully"
         });
     }
+});
+
+//user delete own account
+exports.deleteAccount=asyncErrorHandler(async (req,res,next)=>{
+    const userId=req.user._id;
+    await Promise.all([
+        //delete user posts
+        Post.deleteMany({postedBy:userId}),
+        //remove user id from other user followings
+        User.updateMany({followings:userId},{$pull:{followings:userId}}),
+        //remove user id from other user followers
+        User.updateMany({followers:userId},{$pull:{followers:userId}}),
+        //remove user id from post likes
+        Post.updateMany({likes:userId},{$pull:{likes:userId}}),
+        //delete user comment
+        Post.updateMany({'comments.commentBy':userId},{$pull:{comments:{commentBy:userId}}}),
+        //delete user
+        User.findByIdAndDelete(userId)
+    ]);
+    res.status(204).json({
+        status:"success",
+        data:null
+    });
 });
