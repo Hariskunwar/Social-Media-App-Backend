@@ -128,3 +128,20 @@ exports.deleteComment=asyncErrorHandler(async (req,res,next)=>{
         next(new CustomError("You are not authorized to delete this comment",401))
     }
 });
+
+//delete a post
+exports.deletePost=asyncErrorHandler(async (req,res,next)=>{
+    const post=await Post.findById(req.params.id);
+    if(!post){
+        return next(new CustomError("post not found",404));
+    }
+    if(post.postedBy.toString()!==req.user._id.toString()){
+        return next(new CustomError("unauthorized to delete",401));
+    }
+    await Post.findByIdAndDelete(req.params.id);
+    await User.findByIdAndUpdate(req.user._id,{$pull:{posts:req.params.id}});
+    res.status(200).json({
+        status:"success",
+        message:"post deleted successfully"
+    });
+});
